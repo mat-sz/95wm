@@ -6,8 +6,8 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       screen_(screen),
       window_(window)
 {
-  const uint16_t TITLEBAR_HEIGHT = 30;
-  const uint16_t BORDER_WIDTH = 5;
+  const uint16_t TITLEBAR_HEIGHT = 21;
+  const uint16_t BORDER_WIDTH = 3;
 
   xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, window_);
   xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(conn_, cookie, nullptr);
@@ -54,7 +54,28 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
 
 void Client::DrawFrame(uint16_t width, uint16_t height)
 {
+  cairo_set_antialias(context_, CAIRO_ANTIALIAS_NONE);
   cairo_rectangle(context_, 0, 0, width, height);
-  cairo_set_source_rgb(context_, 1, 0, 0);
+  cairo_set_source_rgb(context_, 0.765, 0.765, 0.765);
   cairo_fill(context_);
+
+  cairo_rectangle(context_, 2, 2, width - 3, height - 3);
+  cairo_set_source_rgb(context_, 1.0, 1.0, 1.0);
+  cairo_set_line_width(context_, 1.0);
+  cairo_stroke(context_);
+
+  cairo_rectangle(context_, 3, 3, width - 6, 18);
+  cairo_set_source_rgb(context_, 0, 0, 0.51);
+  cairo_fill(context_);
+
+  cairo_set_source_rgb(context_, 1.0, 1.0, 1.0);
+  cairo_select_font_face(context_, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size(context_, 12);
+
+  cairo_font_options_t *font_options = cairo_font_options_create();
+  cairo_font_options_set_antialias(font_options, CAIRO_ANTIALIAS_NONE);
+  cairo_set_font_options(context_, font_options);
+
+  cairo_move_to(context_, 6, 16);
+  cairo_show_text(context_, "Window");
 }
