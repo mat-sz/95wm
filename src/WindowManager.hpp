@@ -2,6 +2,8 @@ extern "C"
 {
 #include <X11/Xlib.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_aux.h>
+#include <xcb/xcb_event.h>
 }
 #include <memory>
 
