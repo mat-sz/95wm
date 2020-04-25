@@ -41,7 +41,20 @@ void WindowManager::Run()
     BOOST_LOG_TRIVIAL(error) << "Detected another WM";
   }
 
-  while (true)
+  xcb_generic_event_t *event;
+  while (event = xcb_wait_for_event(conn_))
   {
+    switch (event->response_type & ~0x80)
+    {
+    case XCB_CREATE_NOTIFY:
+      xcb_expose_event_t *e = (xcb_expose_event_t *)event;
+      break;
+    case XCB_DESTROY_NOTIFY:
+      xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *)event;
+      break;
+    case XCB_REPARENT_NOTIFY:
+      xcb_reparent_notify_event_t *e = (xcb_reparent_notify_event_t *)event;
+      break;
+    }
   }
 }
