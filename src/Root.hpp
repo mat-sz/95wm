@@ -8,13 +8,13 @@ extern "C"
 }
 #include <memory>
 
-class Client
+class Root
 {
 public:
-  Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window);
+  Root(xcb_connection_t *conn, xcb_screen_t *screen);
 
 private:
-  void DrawFrame(uint16_t width, uint16_t height);
+  void Draw(uint16_t width, uint16_t height);
 
   // Handle to the XCB connection.
   xcb_connection_t *conn_;

@@ -8,6 +8,7 @@ extern "C"
 #include <memory>
 #include <unordered_map>
 #include "Client.hpp"
+#include "Root.hpp"
 
 #define noop
 
@@ -46,4 +47,5 @@ private:
   xcb_screen_t *screen_;
 
   ::std::unordered_map<xcb_window_t, Client *> clients_;
+  Root* root_;
 };

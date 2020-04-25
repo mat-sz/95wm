@@ -19,6 +19,7 @@ WindowManager::WindowManager(xcb_connection_t *conn)
     : conn_(conn),
       screen_(xcb_aux_get_screen(conn, 0))
 {
+  root_ = new Root(conn_, screen_);
 }
 
 WindowManager::~WindowManager()
