@@ -88,9 +88,14 @@ void WindowManager::OnReparentNotify(const xcb_reparent_notify_event_t *e)
 void WindowManager::OnConfigureRequest(const xcb_configure_request_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "Received a configure request";
-  const uint32_t values[] = {e->x, e->y, e->width, e->height};
-  const uint16_t mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
-  xcb_configure_window(conn_, e->window, mask, values);
+  const uint32_t geometry[] = {e->x, e->y, e->width, e->height};
+  const uint32_t values[] = {e->border_width, e->sibling, e->stack_mode};
+  xcb_configure_window(conn_, e->window,
+                       XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                       geometry);
+  xcb_configure_window(conn_, e->window,
+                       XCB_CONFIG_WINDOW_BORDER_WIDTH | XCB_CONFIG_WINDOW_SIBLING | XCB_CONFIG_WINDOW_STACK_MODE,
+                       values);
   xcb_flush(conn_);
 }
 
@@ -101,6 +106,8 @@ void WindowManager::OnConfigureNotify(const xcb_configure_notify_event_t *e)
 void WindowManager::OnMapRequest(const xcb_map_request_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "Received a map request";
+  Client *client = new Client(conn_, screen_, e->window);
+  clients_[e->window] = client;
   xcb_map_window(conn_, e->window);
   xcb_flush(conn_);
 }

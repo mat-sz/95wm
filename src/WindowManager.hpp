@@ -6,6 +6,8 @@ extern "C"
 #include <xcb/xcb_event.h>
 }
 #include <memory>
+#include <unordered_map>
+#include "Client.hpp"
 
 #define noop
 
@@ -42,4 +44,6 @@ private:
   xcb_connection_t *conn_;
   // Handle to the screen.
   xcb_screen_t *screen_;
+
+  ::std::unordered_map<xcb_window_t, Client *> clients_;
 };
