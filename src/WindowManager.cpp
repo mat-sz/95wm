@@ -28,8 +28,6 @@ WindowManager::~WindowManager()
 
 void WindowManager::Run()
 {
-  xcb_grab_server(conn_);
-
   xcb_window_t root = screen_->root;
 
   const uint32_t event_mask = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
@@ -41,10 +39,12 @@ void WindowManager::Run()
     BOOST_LOG_TRIVIAL(error) << "Detected another WM";
   }
 
+  BOOST_LOG_TRIVIAL(info) << "Starting event loop";
+
   xcb_generic_event_t *event;
   while ((event = xcb_wait_for_event(conn_)))
   {
-    switch (event->response_type & ~0x80)
+    switch (event->response_type)
     {
     case XCB_CREATE_NOTIFY:
       OnCreateNotify((xcb_create_notify_event_t *)event);
@@ -87,6 +87,11 @@ void WindowManager::OnReparentNotify(const xcb_reparent_notify_event_t *e)
 
 void WindowManager::OnConfigureRequest(const xcb_configure_request_event_t *e)
 {
+  BOOST_LOG_TRIVIAL(info) << "Received a configure request";
+  const uint32_t values[] = {e->x, e->y, e->width, e->height};
+  const uint16_t mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+  xcb_configure_window(conn_, e->window, mask, values);
+  xcb_flush(conn_);
 }
 
 void WindowManager::OnConfigureNotify(const xcb_configure_notify_event_t *e)
@@ -95,6 +100,9 @@ void WindowManager::OnConfigureNotify(const xcb_configure_notify_event_t *e)
 
 void WindowManager::OnMapRequest(const xcb_map_request_event_t *e)
 {
+  BOOST_LOG_TRIVIAL(info) << "Received a map request";
+  xcb_map_window(conn_, e->window);
+  xcb_flush(conn_);
 }
 
 void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
