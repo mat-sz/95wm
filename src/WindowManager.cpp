@@ -42,19 +42,61 @@ void WindowManager::Run()
   }
 
   xcb_generic_event_t *event;
-  while (event = xcb_wait_for_event(conn_))
+  while ((event = xcb_wait_for_event(conn_)))
   {
     switch (event->response_type & ~0x80)
     {
     case XCB_CREATE_NOTIFY:
-      xcb_expose_event_t *e = (xcb_expose_event_t *)event;
+      OnCreateNotify((xcb_create_notify_event_t *)event);
       break;
     case XCB_DESTROY_NOTIFY:
-      xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *)event;
+      OnDestroyNotify((xcb_destroy_notify_event_t *)event);
       break;
     case XCB_REPARENT_NOTIFY:
-      xcb_reparent_notify_event_t *e = (xcb_reparent_notify_event_t *)event;
+      OnReparentNotify((xcb_reparent_notify_event_t *)event);
       break;
+    case XCB_CONFIGURE_REQUEST:
+      OnConfigureRequest((xcb_configure_request_event_t *)event);
+      break;
+    case XCB_CONFIGURE_NOTIFY:
+      OnConfigureNotify((xcb_configure_notify_event_t *)event);
+      break;
+    case XCB_MAP_REQUEST:
+      OnMapRequest((xcb_map_request_event_t *)event);
+      break;
+    case XCB_UNMAP_NOTIFY:
+      OnUnmapNotify((xcb_unmap_notify_event_t *)event);
+      break;
+    default:
+      noop;
     }
   }
+}
+
+void WindowManager::OnCreateNotify(const xcb_create_notify_event_t *e)
+{
+}
+
+void WindowManager::OnDestroyNotify(const xcb_destroy_notify_event_t *e)
+{
+}
+
+void WindowManager::OnReparentNotify(const xcb_reparent_notify_event_t *e)
+{
+}
+
+void WindowManager::OnConfigureRequest(const xcb_configure_request_event_t *e)
+{
+}
+
+void WindowManager::OnConfigureNotify(const xcb_configure_notify_event_t *e)
+{
+}
+
+void WindowManager::OnMapRequest(const xcb_map_request_event_t *e)
+{
+}
+
+void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
+{
 }
