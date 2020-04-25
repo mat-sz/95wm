@@ -2,6 +2,25 @@
 
 Windows 95 inspired X11 window manager. Currently non-functional.
 
+## Dependencies
+
+Boost, Xlib (X11) and pthreads are mandatory for the project to build.
+
+## Building
+
+```
+./configure
+make all
+```
+
+## Running (in development)
+
+```
+make dev
+```
+
+This will open a new Xephyr display (size 1000x1000) with xterm and 95wm running inside of it.
+
 ## Special thanks to:
 
 This project uses code from:
