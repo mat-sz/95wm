@@ -89,12 +89,12 @@ void WindowManager::OnConfigureRequest(const xcb_configure_request_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "Received a configure request";
   const uint32_t geometry[] = {e->x, e->y, e->width, e->height};
-  const uint32_t values[] = {e->border_width, e->sibling, e->stack_mode};
+  const uint32_t values[] = {0};
   xcb_configure_window(conn_, e->window,
                        XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
                        geometry);
   xcb_configure_window(conn_, e->window,
-                       XCB_CONFIG_WINDOW_BORDER_WIDTH | XCB_CONFIG_WINDOW_SIBLING | XCB_CONFIG_WINDOW_STACK_MODE,
+                       XCB_CONFIG_WINDOW_BORDER_WIDTH,
                        values);
   xcb_flush(conn_);
 }
