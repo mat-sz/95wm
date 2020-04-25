@@ -1,6 +1,7 @@
 extern "C"
 {
 #include <X11/Xlib.h>
+#include <xcb/xcb.h>
 }
 #include <memory>
 
@@ -17,10 +18,10 @@ public:
 
 private:
   // Invoked internally by Create().
-  WindowManager(Display *display);
+  WindowManager(xcb_connection_t *conn);
 
-  // Handle to the underlying Xlib Display struct.
-  Display *display_;
-  // Handle to root window.
-  const Window root_;
+  // Handle to the XCB connection.
+  xcb_connection_t *conn_;
+  // Handle to the screen.
+  xcb_screen_t *screen_;
 };
