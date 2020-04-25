@@ -4,7 +4,7 @@ Windows 95 inspired X11 window manager. Currently non-functional.
 
 ## Dependencies
 
-Boost, Xlib (X11) and pthreads are mandatory for the project to build.
+Boost, Xlib (X11), XCB, Cairo and pthreads are mandatory for the project to build.
 
 ## Building
 
