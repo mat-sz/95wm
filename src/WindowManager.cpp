@@ -26,5 +26,8 @@ WindowManager::~WindowManager()
 }
 
 void WindowManager::Run()
-{ /* TODO */
+{
+  while (true)
+  {
+  }
 }

@@ -1,8 +1,8 @@
 # CMake generated files
 *appinfo.h
 bin/
-build/
 docs/
+lib/
 
 # Vagrant
 .vagrant/

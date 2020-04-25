@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <boost/program_options.hpp>
+#include <boost/log/trivial.hpp>
+#include "WindowManager.hpp"
 #include "app.h"
 
 using namespace std;
@@ -40,6 +42,16 @@ int main(int argc, char *argv[])
     App app;
     cout << app.getProjectVersion() << endl;
   }
+
+  BOOST_LOG_TRIVIAL(info) << "Initializing the window manager.";
+  unique_ptr<WindowManager> window_manager = WindowManager::Create();
+  if (!window_manager)
+  {
+    BOOST_LOG_TRIVIAL(error) << "Failed to initialize window manager.";
+    return EXIT_FAILURE;
+  }
+
+  window_manager->Run();
 
   return EXIT_SUCCESS;
 }
