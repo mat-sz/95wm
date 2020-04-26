@@ -45,6 +45,39 @@ void WindowManager::Run()
     return;
   }
 
+  BOOST_LOG_TRIVIAL(info) << "Framing existing windows";
+
+  xcb_grab_server(conn_);
+  xcb_query_tree_cookie_t tree_cookie = xcb_query_tree_unchecked(conn_, root);
+  xcb_query_tree_reply_t *tree_reply = xcb_query_tree_reply(conn_, tree_cookie, nullptr);
+  if (tree_reply)
+  {
+    xcb_window_t *windows = xcb_query_tree_children(tree_reply);
+    if (windows)
+    {
+      const uint16_t length = xcb_query_tree_children_length(tree_reply);
+      for (uint16_t i = 0; i < length; i++)
+      {
+        BOOST_LOG_TRIVIAL(info) << "Found window";
+        const xcb_window_t window = windows[i];
+        xcb_get_window_attributes_cookie_t attributes_cookie = xcb_get_window_attributes_unchecked(conn_, window);
+        xcb_get_window_attributes_reply_t *attributes = xcb_get_window_attributes_reply(conn_, attributes_cookie, nullptr);
+
+        if (attributes->map_state == XCB_MAP_STATE_UNMAPPED || attributes->override_redirect)
+        {
+          continue;
+        }
+
+        BOOST_LOG_TRIVIAL(info) << "Framing window";
+        Client *client = new Client(conn_, screen_, window);
+        clients_[window] = client;
+        xcb_map_window(conn_, window);
+        xcb_flush(conn_);
+      }
+    }
+  }
+  xcb_ungrab_server(conn_);
+
   BOOST_LOG_TRIVIAL(info) << "Starting event loop";
 
   xcb_generic_event_t *event;
@@ -141,12 +174,15 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "OnUnmapNotify";
 
-  if (clients_.count(e->window))
+  if (e->event != screen_->root)
   {
-    Client *client = clients_[e->window];
-    client->DestroyFrame();
-    clients_.erase(e->window);
-    delete client;
+    if (clients_.count(e->window))
+    {
+      Client *client = clients_[e->window];
+      client->DestroyFrame();
+      clients_.erase(e->window);
+      delete client;
+    }
   }
 
   root_->Draw();
