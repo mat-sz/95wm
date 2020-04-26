@@ -140,22 +140,53 @@ void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
     xcb_flush(conn_);
   }
 
-  switch (resizing_)
+  if (resizing_ != RESIZE_NONE)
   {
-  case RESIZE_S:
-    const uint32_t geometry_window[] = {e->event_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT)};
-    xcb_configure_window(conn_, window_,
-                         XCB_CONFIG_WINDOW_HEIGHT,
-                         geometry_window);
+    switch (resizing_)
+    {
+    case RESIZE_S:
+    {
+      const uint32_t geometry_window[] = {e->event_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT)};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_window);
 
-    const uint32_t geometry_frame[] = {e->event_y};
-    xcb_configure_window(conn_, frame_,
-                         XCB_CONFIG_WINDOW_HEIGHT,
-                         geometry_frame);
-    xcb_flush(conn_);
-
-    Redraw();
+      const uint32_t geometry_frame[] = {e->event_y};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_frame);
+    }
     break;
+    case RESIZE_SW:
+    {
+      const uint32_t geometry_window[] = {e->event_x - (BORDER_WIDTH * 2), e->event_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT)};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->event_x, e->event_y};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_frame);
+    }
+    break;
+    case RESIZE_W:
+    {
+      const uint32_t geometry_window[] = {e->event_x - (BORDER_WIDTH * 2)};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_WIDTH,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->event_x};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_WIDTH,
+                           geometry_frame);
+    }
+    break;
+    }
+
+    xcb_flush(conn_);
+    Redraw();
   }
 }
 
@@ -177,7 +208,7 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
       xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, frame_);
       xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
 
-      if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH)
+      if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH * 2)
       {
         resizing_ = RESIZE_E;
       }
@@ -185,13 +216,13 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
       {
         resizing_ = RESIZE_SE;
       }
-      else if (e->event_x >= geometry->width - BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH)
-      {
-        resizing_ = RESIZE_SW;
-      }
-      else if (e->event_x >= geometry->width - BORDER_WIDTH)
+      else if (e->event_x >= geometry->width - BORDER_WIDTH * 2 && e->event_y < geometry->height - BORDER_WIDTH * 2)
       {
         resizing_ = RESIZE_W;
+      }
+      else if (e->event_x >= geometry->width - BORDER_WIDTH * 2)
+      {
+        resizing_ = RESIZE_SW;
       }
       else
       {
