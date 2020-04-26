@@ -53,6 +53,10 @@ private:
 
   void OnKeyRelease(const xcb_key_release_event_t *e);
 
+  void OnFocusIn(const xcb_focus_in_event_t *e);
+
+  void OnFocusOut(const xcb_focus_out_event_t *e);
+
   // Handle to the XCB connection.
   xcb_connection_t *conn_;
   // Handle to the screen.

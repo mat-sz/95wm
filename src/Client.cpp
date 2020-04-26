@@ -9,7 +9,8 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       frame_(0),
       surface_(nullptr),
       moving_(false),
-      resizing_(RESIZE_NONE)
+      resizing_(RESIZE_NONE),
+      focused_(false)
 {
   CreateFrame();
 }
@@ -30,7 +31,8 @@ void Client::CreateFrame()
                              XCB_EVENT_MASK_BUTTON_PRESS |
                              XCB_EVENT_MASK_BUTTON_RELEASE |
                              XCB_EVENT_MASK_KEY_PRESS |
-                             XCB_EVENT_MASK_KEY_RELEASE};
+                             XCB_EVENT_MASK_KEY_RELEASE |
+                             XCB_EVENT_MASK_FOCUS_CHANGE};
 
   xcb_create_window(conn_, screen_->root_depth, frame_,
                     screen_->root, geometry->x, geometry->y, frame_width,
@@ -40,6 +42,11 @@ void Client::CreateFrame()
   xcb_change_save_set(conn_, XCB_SET_MODE_INSERT, window_);
   xcb_reparent_window(conn_, window_, frame_, BORDER_WIDTH, TITLEBAR_HEIGHT + BORDER_WIDTH);
   xcb_map_window(conn_, frame_);
+
+  const uint32_t event_mask = XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+                              XCB_EVENT_MASK_PROPERTY_CHANGE |
+                              XCB_EVENT_MASK_FOCUS_CHANGE;
+  xcb_change_window_attributes(conn_, window_, XCB_CW_EVENT_MASK, &event_mask);
 
   DrawFrame(frame_width, frame_height);
 }
@@ -110,13 +117,27 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
   cairo_stroke(context);
 
   cairo_rectangle(context, 3, 3, frame_width - 6, 18);
-  cairo_set_source_rgb(context, 0, 0, 0.502);
+  if (focused_)
+  {
+    cairo_set_source_rgb(context, 0, 0, 0.502);
+  }
+  else
+  {
+    cairo_set_source_rgb(context, 0.502, 0.502, 0.502);
+  }
   cairo_fill(context);
 
   xcb_get_property_cookie_t cookie = xcb_get_property(conn_, 0, window_, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 0, 100);
   xcb_get_property_reply_t *reply = xcb_get_property_reply(conn_, cookie, nullptr);
 
-  cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  if (focused_)
+  {
+    cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  }
+  else
+  {
+    cairo_set_source_rgb(context, 0.753, 0.753, 0.753);
+  }
   cairo_select_font_face(context, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size(context, 12);
 
@@ -348,3 +369,15 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
 void Client::OnKeyPress(const xcb_key_press_event_t *e) {}
 
 void Client::OnKeyRelease(const xcb_key_release_event_t *e) {}
+
+void Client::OnFocusIn(const xcb_focus_in_event_t *e)
+{
+  focused_ = true;
+  Redraw();
+}
+
+void Client::OnFocusOut(const xcb_focus_out_event_t *e)
+{
+  focused_ = false;
+  Redraw();
+}

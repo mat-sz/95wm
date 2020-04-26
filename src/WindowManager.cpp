@@ -36,8 +36,7 @@ void WindowManager::Run()
                               XCB_EVENT_MASK_STRUCTURE_NOTIFY |
                               XCB_EVENT_MASK_PROPERTY_CHANGE |
                               XCB_EVENT_MASK_EXPOSURE;
-  xcb_void_cookie_t cookie;
-  cookie = xcb_change_window_attributes_checked(conn_, root, XCB_CW_EVENT_MASK, &event_mask);
+  xcb_void_cookie_t cookie = xcb_change_window_attributes_checked(conn_, root, XCB_CW_EVENT_MASK, &event_mask);
 
   if (xcb_request_check(conn_, cookie))
   {
@@ -127,6 +126,12 @@ void WindowManager::Run()
       break;
     case XCB_KEY_RELEASE:
       OnKeyRelease((xcb_key_release_event_t *)event);
+      break;
+    case XCB_FOCUS_IN:
+      OnFocusIn((xcb_focus_in_event_t *)event);
+      break;
+    case XCB_FOCUS_OUT:
+      OnFocusOut((xcb_focus_out_event_t *)event);
       break;
     default:
       noop;
@@ -287,6 +292,30 @@ void WindowManager::OnKeyRelease(const xcb_key_release_event_t *e)
     if (client.second->frame_ == e->event)
     {
       client.second->OnKeyRelease(e);
+    }
+  });
+}
+
+void WindowManager::OnFocusIn(const xcb_focus_in_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnFocusIn";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnFocusIn(e);
+    }
+  });
+}
+
+void WindowManager::OnFocusOut(const xcb_focus_out_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnFocusOut";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnFocusOut(e);
     }
   });
 }

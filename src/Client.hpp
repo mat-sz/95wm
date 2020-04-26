@@ -41,6 +41,10 @@ public:
 
   void OnKeyRelease(const xcb_key_release_event_t *e);
 
+  void OnFocusIn(const xcb_focus_in_event_t *e);
+
+  void OnFocusOut(const xcb_focus_out_event_t *e);
+
   void Redraw();
 
   xcb_window_t window_;
@@ -65,4 +69,6 @@ private:
   uint16_t resizing_original_y_;
   uint16_t resizing_original_width_;
   uint16_t resizing_original_height_;
+
+  bool focused_;
 };
