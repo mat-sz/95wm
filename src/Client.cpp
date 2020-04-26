@@ -144,6 +144,36 @@ void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
   {
     switch (resizing_)
     {
+    case RESIZE_E:
+    {
+      const uint32_t geometry_window[] = {(resizing_original_x_ + resizing_original_width_ - e->root_x - BORDER_WIDTH * 2)};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_WIDTH,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->root_x, (resizing_original_x_ + resizing_original_width_ - e->root_x)};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_WIDTH,
+                           geometry_frame);
+    }
+    break;
+    case RESIZE_SE:
+    {
+      const uint32_t geometry_window[] = {(resizing_original_x_ + resizing_original_width_ - e->root_x - BORDER_WIDTH * 2),
+                                          e->event_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT)};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->root_x,
+                                         (resizing_original_x_ + resizing_original_width_ - e->root_x),
+                                         e->event_y};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_X |
+                               XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_frame);
+    }
+    break;
     case RESIZE_S:
     {
       const uint32_t geometry_window[] = {e->event_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT)};
@@ -207,6 +237,11 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
     {
       xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, frame_);
       xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
+
+      resizing_original_x_ = geometry->x;
+      resizing_original_y_ = geometry->y;
+      resizing_original_width_ = geometry->width;
+      resizing_original_height_ = geometry->height;
 
       if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH * 2)
       {

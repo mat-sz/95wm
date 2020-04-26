@@ -58,4 +58,8 @@ private:
   uint16_t moving_offset_y_;
 
   char resizing_;
+  uint16_t resizing_original_x_;
+  uint16_t resizing_original_y_;
+  uint16_t resizing_original_width_;
+  uint16_t resizing_original_height_;
 };

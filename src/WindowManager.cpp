@@ -242,6 +242,11 @@ void WindowManager::OnButtonPress(const xcb_button_press_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "OnButtonPress";
 
+  const uint32_t values[] = {XCB_STACK_MODE_ABOVE};
+  xcb_configure_window(conn_, e->event,
+                       XCB_CONFIG_WINDOW_STACK_MODE,
+                       values);
+
   std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
     if (client.second->frame_ == e->event)
     {
