@@ -93,16 +93,24 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 
   cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
   cairo_rectangle(context, 0, 0, frame_width, frame_height);
-  cairo_set_source_rgb(context, 0.765, 0.765, 0.765);
+  cairo_set_source_rgb(context, 0.753, 0.753, 0.753);
   cairo_fill(context);
 
-  cairo_rectangle(context, 2, 2, frame_width - 3, frame_height - 3);
+  cairo_rectangle(context, 2, 2, frame_width - 2, frame_height - 2);
   cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
   cairo_set_line_width(context, 1.0);
   cairo_stroke(context);
 
+  cairo_set_source_rgb(context, 0.502, 0.502, 0.502);
+  cairo_move_to(context, frame_width, 1);
+  cairo_line_to(context, frame_width, frame_height);
+  cairo_stroke(context);
+  cairo_move_to(context, frame_width, frame_height);
+  cairo_line_to(context, 1, frame_height);
+  cairo_stroke(context);
+
   cairo_rectangle(context, 3, 3, frame_width - 6, 18);
-  cairo_set_source_rgb(context, 0, 0, 0.51);
+  cairo_set_source_rgb(context, 0, 0, 0.502);
   cairo_fill(context);
 
   xcb_get_property_cookie_t cookie = xcb_get_property(conn_, 0, window_, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 0, 100);
