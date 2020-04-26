@@ -7,7 +7,9 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       screen_(screen),
       window_(window),
       frame_(0),
-      surface_(nullptr)
+      surface_(nullptr),
+      moving_(false),
+      resizing_(RESIZE_NONE)
 {
   CreateFrame();
 }
@@ -116,6 +118,7 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 
   cairo_move_to(context, 6, 16);
   cairo_show_text(context, (char *)xcb_get_property_value(reply));
+  cairo_surface_flush(surface_);
 }
 
 void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
@@ -136,18 +139,67 @@ void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
                          geometry);
     xcb_flush(conn_);
   }
+
+  switch (resizing_)
+  {
+  case RESIZE_S:
+    const uint32_t geometry_window[] = {e->event_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT)};
+    xcb_configure_window(conn_, window_,
+                         XCB_CONFIG_WINDOW_HEIGHT,
+                         geometry_window);
+
+    const uint32_t geometry_frame[] = {e->event_y};
+    xcb_configure_window(conn_, frame_,
+                         XCB_CONFIG_WINDOW_HEIGHT,
+                         geometry_frame);
+    xcb_flush(conn_);
+
+    Redraw();
+    break;
+  }
 }
 
 void Client::OnButtonPress(const xcb_button_press_event_t *e)
 {
   if (e->detail == XCB_BUTTON_INDEX_1)
   {
-    xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, window_);
-    xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
+    moving_ = false;
+    resizing_ = RESIZE_NONE;
 
-    moving_ = true;
-    moving_offset_x_ = e->event_x;
-    moving_offset_y_ = e->event_y;
+    if (e->event_y < TITLEBAR_HEIGHT + BORDER_WIDTH * 2)
+    {
+      moving_ = true;
+      moving_offset_x_ = e->event_x;
+      moving_offset_y_ = e->event_y;
+    }
+    else
+    {
+      xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, frame_);
+      xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
+
+      if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH)
+      {
+        resizing_ = RESIZE_E;
+      }
+      else if (e->event_x < BORDER_WIDTH)
+      {
+        resizing_ = RESIZE_SE;
+      }
+      else if (e->event_x >= geometry->width - BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH)
+      {
+        resizing_ = RESIZE_SW;
+      }
+      else if (e->event_x >= geometry->width - BORDER_WIDTH)
+      {
+        resizing_ = RESIZE_W;
+      }
+      else
+      {
+        resizing_ = RESIZE_S;
+      }
+
+      // xcb_warp_pointer(conn_, XCB_NONE, frame_, 0, 0, 0, 0, geometry->width, geometry->height);
+    }
   }
 }
 

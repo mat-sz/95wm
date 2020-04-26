@@ -11,6 +11,13 @@ extern "C"
 #define TITLEBAR_HEIGHT 21
 #define BORDER_WIDTH 3
 
+#define RESIZE_NONE 0
+#define RESIZE_E 1
+#define RESIZE_SE 2
+#define RESIZE_S 3
+#define RESIZE_SW 4
+#define RESIZE_W 5
+
 class Client
 {
 public:
@@ -49,4 +56,6 @@ private:
   bool moving_;
   uint16_t moving_offset_x_;
   uint16_t moving_offset_y_;
+
+  char resizing_;
 };
