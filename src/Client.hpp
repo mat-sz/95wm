@@ -21,6 +21,8 @@ public:
 
   void OnConfigureRequest(const xcb_configure_request_event_t *e);
 
+  void Redraw();
+
 private:
   void DrawFrame(uint16_t frame_width, uint16_t frame_height);
 

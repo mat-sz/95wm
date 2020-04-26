@@ -27,6 +27,8 @@ private:
   // Invoked internally by Create().
   WindowManager(xcb_connection_t *conn);
 
+  void OnExpose(const xcb_expose_event_t *e);
+
   void OnConfigureRequest(const xcb_configure_request_event_t *e);
 
   void OnMapRequest(const xcb_map_request_event_t *e);

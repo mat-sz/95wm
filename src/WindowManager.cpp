@@ -34,7 +34,8 @@ void WindowManager::Run()
   const uint32_t event_mask = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
                               XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
                               XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-                              XCB_EVENT_MASK_PROPERTY_CHANGE;
+                              XCB_EVENT_MASK_PROPERTY_CHANGE |
+                              XCB_EVENT_MASK_EXPOSURE;
   xcb_void_cookie_t cookie;
   cookie = xcb_change_window_attributes_checked(conn_, root, XCB_CW_EVENT_MASK, &event_mask);
 
@@ -72,6 +73,9 @@ void WindowManager::Run()
     case XCB_UNMAP_NOTIFY:
       OnUnmapNotify((xcb_unmap_notify_event_t *)event);
       break;
+    case XCB_EXPOSE:
+      OnExpose((xcb_expose_event_t *)event);
+      break;
     default:
       noop;
     }
@@ -92,8 +96,6 @@ void WindowManager::OnDestroyNotify(const xcb_destroy_notify_event_t *e)
     clients_.erase(e->window);
     delete client;
   }
-
-  root_->Draw();
 }
 
 void WindowManager::OnReparentNotify(const xcb_reparent_notify_event_t *e)
@@ -146,4 +148,17 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
     clients_.erase(e->window);
     delete client;
   }
+
+  root_->Draw();
+
+  // Not exactly the most performant way.
+  // TODO: Rewrite in OnExpose.
+  std::for_each(clients_.begin(), clients_.end(), [](std::pair<xcb_window_t, Client *> client) {
+    client.second->Redraw();
+  });
+}
+
+void WindowManager::OnExpose(const xcb_expose_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnExpose";
 }

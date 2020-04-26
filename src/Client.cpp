@@ -49,6 +49,22 @@ void Client::DestroyFrame()
   frame_ = 0;
 }
 
+void Client::Redraw()
+{
+  if (frame_ == 0)
+  {
+    return;
+  }
+
+  xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, window_);
+  xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
+
+  const uint16_t frame_width = geometry->width + BORDER_WIDTH * 2;
+  const uint16_t frame_height = geometry->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT;
+
+  DrawFrame(frame_width, frame_height);
+}
+
 void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 {
   if (frame_ == 0)
