@@ -14,7 +14,7 @@ public:
   Root(xcb_connection_t *conn, xcb_screen_t *screen);
 
 private:
-  void Draw(uint16_t width, uint16_t height);
+  void Draw();
 
   // Handle to the XCB connection.
   xcb_connection_t *conn_;
@@ -24,5 +24,4 @@ private:
   xcb_window_t window_;
 
   cairo_surface_t *surface_;
-  cairo_t *context_;
 };

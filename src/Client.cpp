@@ -1,81 +1,66 @@
 #include "Client.hpp"
 #include <boost/log/trivial.hpp>
+#include "util.hpp"
 
 Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window)
     : conn_(conn),
       screen_(screen),
-      window_(window)
+      window_(window),
+      frame_(xcb_generate_id(conn_)),
+      surface_(nullptr)
 {
-  const uint16_t TITLEBAR_HEIGHT = 21;
-  const uint16_t BORDER_WIDTH = 3;
-
   xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, window_);
-  xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(conn_, cookie, nullptr);
+  xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
 
-  const uint16_t frame_width = reply->width + BORDER_WIDTH * 2;
-  const uint16_t frame_height = reply->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT;
+  const uint16_t frame_width = geometry->width + BORDER_WIDTH * 2;
+  const uint16_t frame_height = geometry->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT;
 
-  xcb_window_t frame = xcb_generate_id(conn_);
-  xcb_create_window(conn_, screen_->root_depth, frame,
-                    screen->root, reply->x, reply->y, frame_width,
+  xcb_create_window(conn_, screen_->root_depth, frame_,
+                    screen->root, geometry->x, geometry->y, frame_width,
                     frame_height, 0, XCB_COPY_FROM_PARENT,
                     screen->root_visual, 0, nullptr);
 
   xcb_change_save_set(conn_, XCB_SET_MODE_INSERT, window_);
-  xcb_reparent_window(conn_, window_, frame, BORDER_WIDTH, TITLEBAR_HEIGHT + BORDER_WIDTH);
-  xcb_map_window(conn_, frame);
+  xcb_reparent_window(conn_, window_, frame_, BORDER_WIDTH, TITLEBAR_HEIGHT + BORDER_WIDTH);
+  xcb_map_window(conn_, frame_);
 
-  xcb_visualtype_t *visualtype = nullptr;
-  xcb_depth_iterator_t depths = xcb_screen_allowed_depths_iterator(screen_);
-  while (depths.rem)
-  {
-    xcb_visualtype_iterator_t visuals = xcb_depth_visuals_iterator(depths.data);
-    while (visuals.rem)
-    {
-      if (screen->root_visual == visuals.data->visual_id)
-      {
-        visualtype = visuals.data;
-        break;
-      }
-      xcb_visualtype_next(&visuals);
-    }
-
-    if (visualtype)
-    {
-      break;
-    }
-    xcb_depth_next(&depths);
-  }
-
-  surface_ = cairo_xcb_surface_create(conn, frame, visualtype, frame_width, frame_height);
-  context_ = cairo_create(surface_);
   DrawFrame(frame_width, frame_height);
 }
 
-void Client::DrawFrame(uint16_t width, uint16_t height)
+void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 {
-  cairo_set_antialias(context_, CAIRO_ANTIALIAS_NONE);
-  cairo_rectangle(context_, 0, 0, width, height);
-  cairo_set_source_rgb(context_, 0.765, 0.765, 0.765);
-  cairo_fill(context_);
+  if (surface_ != nullptr)
+  {
+    cairo_surface_finish(surface_);
+    cairo_surface_destroy(surface_);
+  }
 
-  cairo_rectangle(context_, 2, 2, width - 3, height - 3);
-  cairo_set_source_rgb(context_, 1.0, 1.0, 1.0);
-  cairo_set_line_width(context_, 1.0);
-  cairo_stroke(context_);
+  xcb_visualtype_t *visualtype = FindVisualtype(screen_);
+  surface_ = cairo_xcb_surface_create(conn_, frame_, visualtype, frame_width, frame_height);
+  cairo_t *context = cairo_create(surface_);
 
-  cairo_rectangle(context_, 3, 3, width - 6, 18);
-  cairo_set_source_rgb(context_, 0, 0, 0.51);
-  cairo_fill(context_);
+  cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
+  cairo_rectangle(context, 0, 0, frame_width, frame_height);
+  cairo_set_source_rgb(context, 0.765, 0.765, 0.765);
+  cairo_fill(context);
 
-  cairo_set_source_rgb(context_, 1.0, 1.0, 1.0);
-  cairo_select_font_face(context_, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-  cairo_set_font_size(context_, 12);
+  cairo_rectangle(context, 2, 2, frame_width - 3, frame_height - 3);
+  cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  cairo_set_line_width(context, 1.0);
+  cairo_stroke(context);
+
+  cairo_rectangle(context, 3, 3, frame_width - 6, 18);
+  cairo_set_source_rgb(context, 0, 0, 0.51);
+  cairo_fill(context);
+
+  cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  cairo_select_font_face(context, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size(context, 12);
 
   cairo_font_options_t *font_options = cairo_font_options_create();
   cairo_font_options_set_antialias(font_options, CAIRO_ANTIALIAS_NONE);
-  cairo_set_font_options(context_, font_options);
+  cairo_set_font_options(context, font_options);
 
-  cairo_move_to(context_, 6, 16);
-  cairo_show_text(context_, "Window");
+  cairo_move_to(context, 6, 16);
+  cairo_show_text(context, "Window");
 }

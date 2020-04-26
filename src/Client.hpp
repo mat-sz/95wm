@@ -8,13 +8,16 @@ extern "C"
 }
 #include <memory>
 
+#define TITLEBAR_HEIGHT 21
+#define BORDER_WIDTH 3
+
 class Client
 {
 public:
   Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window);
 
 private:
-  void DrawFrame(uint16_t width, uint16_t height);
+  void DrawFrame(uint16_t frame_width, uint16_t frame_height);
 
   // Handle to the XCB connection.
   xcb_connection_t *conn_;
@@ -22,7 +25,7 @@ private:
   xcb_screen_t *screen_;
 
   xcb_window_t window_;
+  xcb_window_t frame_;
 
   cairo_surface_t *surface_;
-  cairo_t *context_;
 };
