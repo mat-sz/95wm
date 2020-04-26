@@ -63,7 +63,10 @@ void WindowManager::Run()
         xcb_get_window_attributes_cookie_t attributes_cookie = xcb_get_window_attributes_unchecked(conn_, window);
         xcb_get_window_attributes_reply_t *attributes = xcb_get_window_attributes_reply(conn_, attributes_cookie, nullptr);
 
-        if (attributes->map_state == XCB_MAP_STATE_UNMAPPED || attributes->override_redirect)
+        xcb_get_geometry_cookie_t geometry_cookie = xcb_get_geometry_unchecked(conn_, window);
+        xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, geometry_cookie, nullptr);
+
+        if (!geometry || !attributes || attributes->map_state == XCB_MAP_STATE_UNMAPPED || attributes->override_redirect)
         {
           continue;
         }
@@ -77,6 +80,7 @@ void WindowManager::Run()
     }
   }
   xcb_ungrab_server(conn_);
+  xcb_flush(conn_);
 
   BOOST_LOG_TRIVIAL(info) << "Starting event loop";
 
