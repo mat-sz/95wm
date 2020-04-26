@@ -17,6 +17,9 @@ extern "C"
 #define RESIZE_S 3
 #define RESIZE_SW 4
 #define RESIZE_W 5
+#define RESIZE_NW 6
+#define RESIZE_N 7
+#define RESIZE_NE 8
 
 class Client
 {

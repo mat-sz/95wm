@@ -144,6 +144,54 @@ void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
   {
     switch (resizing_)
     {
+    case RESIZE_NE:
+    {
+      const uint32_t geometry_window[] = {(resizing_original_x_ + resizing_original_width_ - e->root_x - BORDER_WIDTH * 2),
+                                          (resizing_original_y_ + resizing_original_height_ - e->root_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT))};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->root_x, e->root_y,
+                                         (resizing_original_x_ + resizing_original_width_ - e->root_x),
+                                         (resizing_original_y_ + resizing_original_height_ - e->root_y)};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y |
+                               XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_frame);
+    }
+    break;
+    case RESIZE_NW:
+    {
+      const uint32_t geometry_window[] = {e->event_x - (BORDER_WIDTH * 2),
+                                          (resizing_original_y_ + resizing_original_height_ - e->root_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT))};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->root_y,
+                                         e->event_x,
+                                         (resizing_original_y_ + resizing_original_height_ - e->root_y)};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_Y |
+                               XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_frame);
+    }
+    break;
+    case RESIZE_N:
+    {
+      const uint32_t geometry_window[] = {(resizing_original_y_ + resizing_original_height_ - e->root_y - (BORDER_WIDTH * 2 + TITLEBAR_HEIGHT))};
+      xcb_configure_window(conn_, window_,
+                           XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_window);
+
+      const uint32_t geometry_frame[] = {e->root_y,
+                                         (resizing_original_y_ + resizing_original_height_ - e->root_y)};
+      xcb_configure_window(conn_, frame_,
+                           XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_HEIGHT,
+                           geometry_frame);
+    }
+    break;
     case RESIZE_E:
     {
       const uint32_t geometry_window[] = {(resizing_original_x_ + resizing_original_width_ - e->root_x - BORDER_WIDTH * 2)};
@@ -227,7 +275,7 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
     moving_ = false;
     resizing_ = RESIZE_NONE;
 
-    if (e->event_y < TITLEBAR_HEIGHT + BORDER_WIDTH * 2)
+    if (e->event_y > BORDER_WIDTH && e->event_y < TITLEBAR_HEIGHT + BORDER_WIDTH * 2)
     {
       moving_ = true;
       moving_offset_x_ = e->event_x;
@@ -243,7 +291,19 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
       resizing_original_width_ = geometry->width;
       resizing_original_height_ = geometry->height;
 
-      if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH * 2)
+      if (e->event_x < BORDER_WIDTH && e->event_y <= BORDER_WIDTH)
+      {
+        resizing_ = RESIZE_NE;
+      }
+      else if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH * 2)
+      {
+        resizing_ = RESIZE_N;
+      }
+      else if (e->event_y <= BORDER_WIDTH)
+      {
+        resizing_ = RESIZE_NW;
+      }
+      else if (e->event_x < BORDER_WIDTH && e->event_y < geometry->height - BORDER_WIDTH * 2)
       {
         resizing_ = RESIZE_E;
       }
