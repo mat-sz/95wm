@@ -21,7 +21,14 @@ void Client::CreateFrame()
 
   const uint16_t frame_width = geometry->width + BORDER_WIDTH * 2;
   const uint16_t frame_height = geometry->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT;
-  const uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
+  const uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+                             XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+                             XCB_EVENT_MASK_FOCUS_CHANGE |
+                             XCB_EVENT_MASK_BUTTON_MOTION |
+                             XCB_EVENT_MASK_BUTTON_PRESS |
+                             XCB_EVENT_MASK_BUTTON_RELEASE |
+                             XCB_EVENT_MASK_KEY_PRESS |
+                             XCB_EVENT_MASK_KEY_RELEASE};
 
   xcb_create_window(conn_, screen_->root_depth, frame_,
                     screen_->root, geometry->x, geometry->y, frame_width,
@@ -118,3 +125,13 @@ void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
 
   DrawFrame(frame_width, frame_height);
 }
+
+void Client::OnMotionNotify(const xcb_motion_notify_event_t *e) {}
+
+void Client::OnButtonPress(const xcb_button_press_event_t *e) {}
+
+void Client::OnButtonRelease(const xcb_button_release_event_t *e) {}
+
+void Client::OnKeyPress(const xcb_key_press_event_t *e) {}
+
+void Client::OnKeyRelease(const xcb_key_release_event_t *e) {}

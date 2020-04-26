@@ -43,6 +43,16 @@ private:
 
   void OnReparentNotify(const xcb_reparent_notify_event_t *e);
 
+  void OnMotionNotify(const xcb_motion_notify_event_t *e);
+
+  void OnButtonPress(const xcb_button_press_event_t *e);
+
+  void OnButtonRelease(const xcb_button_release_event_t *e);
+
+  void OnKeyPress(const xcb_key_press_event_t *e);
+
+  void OnKeyRelease(const xcb_key_release_event_t *e);
+
   // Handle to the XCB connection.
   xcb_connection_t *conn_;
   // Handle to the screen.

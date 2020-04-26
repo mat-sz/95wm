@@ -21,7 +21,20 @@ public:
 
   void OnConfigureRequest(const xcb_configure_request_event_t *e);
 
+  void OnMotionNotify(const xcb_motion_notify_event_t *e);
+
+  void OnButtonPress(const xcb_button_press_event_t *e);
+
+  void OnButtonRelease(const xcb_button_release_event_t *e);
+
+  void OnKeyPress(const xcb_key_press_event_t *e);
+
+  void OnKeyRelease(const xcb_key_release_event_t *e);
+
   void Redraw();
+
+  xcb_window_t window_;
+  xcb_window_t frame_;
 
 private:
   void DrawFrame(uint16_t frame_width, uint16_t frame_height);
@@ -30,9 +43,6 @@ private:
   xcb_connection_t *conn_;
   // Handle to the screen.
   xcb_screen_t *screen_;
-
-  xcb_window_t window_;
-  xcb_window_t frame_;
 
   cairo_surface_t *surface_;
 };

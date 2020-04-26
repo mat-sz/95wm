@@ -113,6 +113,21 @@ void WindowManager::Run()
     case XCB_EXPOSE:
       OnExpose((xcb_expose_event_t *)event);
       break;
+    case XCB_MOTION_NOTIFY:
+      OnMotionNotify((xcb_motion_notify_event_t *)event);
+      break;
+    case XCB_BUTTON_PRESS:
+      OnButtonPress((xcb_button_release_event_t *)event);
+      break;
+    case XCB_BUTTON_RELEASE:
+      OnButtonRelease((xcb_button_release_event_t *)event);
+      break;
+    case XCB_KEY_PRESS:
+      OnKeyPress((xcb_key_press_event_t *)event);
+      break;
+    case XCB_KEY_RELEASE:
+      OnKeyRelease((xcb_key_release_event_t *)event);
+      break;
     default:
       noop;
     }
@@ -201,4 +216,64 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
 void WindowManager::OnExpose(const xcb_expose_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "OnExpose";
+}
+
+void WindowManager::OnMotionNotify(const xcb_motion_notify_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnMotionNotify";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnMotionNotify(e);
+    }
+  });
+}
+
+void WindowManager::OnButtonPress(const xcb_button_press_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnButtonPress";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnButtonPress(e);
+    }
+  });
+}
+
+void WindowManager::OnButtonRelease(const xcb_button_release_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnButtonRelease";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnButtonRelease(e);
+    }
+  });
+}
+
+void WindowManager::OnKeyPress(const xcb_key_press_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnKeyPress";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnKeyPress(e);
+    }
+  });
+}
+
+void WindowManager::OnKeyRelease(const xcb_key_release_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnKeyRelease";
+
+  std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
+    if (client.second->frame_ == e->event)
+    {
+      client.second->OnKeyRelease(e);
+    }
+  });
 }
