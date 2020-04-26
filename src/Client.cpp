@@ -96,6 +96,9 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
   cairo_set_source_rgb(context, 0, 0, 0.51);
   cairo_fill(context);
 
+  xcb_get_property_cookie_t cookie = xcb_get_property(conn_, 0, window_, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 0, 100);
+  xcb_get_property_reply_t *reply = xcb_get_property_reply(conn_, cookie, nullptr);
+
   cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
   cairo_select_font_face(context, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size(context, 12);
@@ -105,7 +108,7 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
   cairo_set_font_options(context, font_options);
 
   cairo_move_to(context, 6, 16);
-  cairo_show_text(context, "Window");
+  cairo_show_text(context, (char *)xcb_get_property_value(reply));
 }
 
 void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
