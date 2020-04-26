@@ -45,4 +45,8 @@ private:
   xcb_screen_t *screen_;
 
   cairo_surface_t *surface_;
+
+  bool moving_;
+  uint16_t moving_offset_x_;
+  uint16_t moving_offset_y_;
 };

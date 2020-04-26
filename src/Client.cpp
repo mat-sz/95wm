@@ -126,11 +126,38 @@ void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
   DrawFrame(frame_width, frame_height);
 }
 
-void Client::OnMotionNotify(const xcb_motion_notify_event_t *e) {}
+void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
+{
+  if (moving_)
+  {
+    const uint32_t geometry[] = {e->root_x - moving_offset_x_, e->root_y - moving_offset_y_};
+    xcb_configure_window(conn_, frame_,
+                         XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
+                         geometry);
+    xcb_flush(conn_);
+  }
+}
 
-void Client::OnButtonPress(const xcb_button_press_event_t *e) {}
+void Client::OnButtonPress(const xcb_button_press_event_t *e)
+{
+  if (e->detail == XCB_BUTTON_INDEX_1)
+  {
+    xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, window_);
+    xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
 
-void Client::OnButtonRelease(const xcb_button_release_event_t *e) {}
+    moving_ = true;
+    moving_offset_x_ = e->event_x;
+    moving_offset_y_ = e->event_y;
+  }
+}
+
+void Client::OnButtonRelease(const xcb_button_release_event_t *e)
+{
+  if (e->detail == XCB_BUTTON_INDEX_1)
+  {
+    moving_ = false;
+  }
+}
 
 void Client::OnKeyPress(const xcb_key_press_event_t *e) {}
 
