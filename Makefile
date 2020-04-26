@@ -8,6 +8,7 @@ dev: all
 	Xephyr -br :1 -screen 1000x1000 &
 	sleep 1
 	DISPLAY=:1 xterm &
+	DISPLAY=:1 xterm -geometry 100x100+50+50 &
 	DISPLAY=:1 bin/95wm
 
 ./build/Makefile:

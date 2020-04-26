@@ -6,19 +6,27 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
     : conn_(conn),
       screen_(screen),
       window_(window),
-      frame_(xcb_generate_id(conn_)),
+      frame_(0),
       surface_(nullptr)
 {
+  CreateFrame();
+}
+
+void Client::CreateFrame()
+{
+  frame_ = xcb_generate_id(conn_);
+
   xcb_get_geometry_cookie_t cookie = xcb_get_geometry(conn_, window_);
   xcb_get_geometry_reply_t *geometry = xcb_get_geometry_reply(conn_, cookie, nullptr);
 
   const uint16_t frame_width = geometry->width + BORDER_WIDTH * 2;
   const uint16_t frame_height = geometry->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT;
+  const uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY};
 
   xcb_create_window(conn_, screen_->root_depth, frame_,
-                    screen->root, geometry->x, geometry->y, frame_width,
+                    screen_->root, geometry->x, geometry->y, frame_width,
                     frame_height, 0, XCB_COPY_FROM_PARENT,
-                    screen->root_visual, 0, nullptr);
+                    screen_->root_visual, XCB_CW_EVENT_MASK, values);
 
   xcb_change_save_set(conn_, XCB_SET_MODE_INSERT, window_);
   xcb_reparent_window(conn_, window_, frame_, BORDER_WIDTH, TITLEBAR_HEIGHT + BORDER_WIDTH);
@@ -27,8 +35,27 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
   DrawFrame(frame_width, frame_height);
 }
 
+void Client::DestroyFrame()
+{
+  if (frame_ == 0)
+  {
+    return;
+  }
+
+  xcb_unmap_window(conn_, frame_);
+  xcb_reparent_window(conn_, window_, screen_->root, 0, 0);
+  xcb_change_save_set(conn_, XCB_SET_MODE_DELETE, window_);
+  xcb_destroy_window(conn_, frame_);
+  frame_ = 0;
+}
+
 void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 {
+  if (frame_ == 0)
+  {
+    return;
+  }
+
   if (surface_ != nullptr)
   {
     cairo_surface_finish(surface_);
@@ -63,4 +90,12 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 
   cairo_move_to(context, 6, 16);
   cairo_show_text(context, "Window");
+}
+
+void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
+{
+  const uint16_t frame_width = e->width + BORDER_WIDTH * 2;
+  const uint16_t frame_height = e->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT;
+
+  DrawFrame(frame_width, frame_height);
 }

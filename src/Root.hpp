@@ -13,9 +13,9 @@ class Root
 public:
   Root(xcb_connection_t *conn, xcb_screen_t *screen);
 
-private:
   void Draw();
 
+private:
   // Handle to the XCB connection.
   xcb_connection_t *conn_;
   // Handle to the screen.

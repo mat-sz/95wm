@@ -47,5 +47,5 @@ private:
   xcb_screen_t *screen_;
 
   ::std::unordered_map<xcb_window_t, Client *> clients_;
-  Root* root_;
+  Root *root_;
 };

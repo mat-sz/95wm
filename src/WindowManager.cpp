@@ -31,13 +31,17 @@ void WindowManager::Run()
 {
   xcb_window_t root = screen_->root;
 
-  const uint32_t event_mask = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+  const uint32_t event_mask = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+                              XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+                              XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+                              XCB_EVENT_MASK_PROPERTY_CHANGE;
   xcb_void_cookie_t cookie;
   cookie = xcb_change_window_attributes_checked(conn_, root, XCB_CW_EVENT_MASK, &event_mask);
 
   if (xcb_request_check(conn_, cookie))
   {
     BOOST_LOG_TRIVIAL(error) << "Detected another WM";
+    return;
   }
 
   BOOST_LOG_TRIVIAL(info) << "Starting event loop";
@@ -45,7 +49,7 @@ void WindowManager::Run()
   xcb_generic_event_t *event;
   while ((event = xcb_wait_for_event(conn_)))
   {
-    switch (event->response_type)
+    switch (XCB_EVENT_RESPONSE_TYPE(event))
     {
     case XCB_CREATE_NOTIFY:
       OnCreateNotify((xcb_create_notify_event_t *)event);
@@ -80,6 +84,16 @@ void WindowManager::OnCreateNotify(const xcb_create_notify_event_t *e)
 
 void WindowManager::OnDestroyNotify(const xcb_destroy_notify_event_t *e)
 {
+  BOOST_LOG_TRIVIAL(info) << "OnDestroyNotify";
+
+  if (clients_.count(e->window))
+  {
+    Client *client = clients_[e->window];
+    clients_.erase(e->window);
+    delete client;
+  }
+
+  root_->Draw();
 }
 
 void WindowManager::OnReparentNotify(const xcb_reparent_notify_event_t *e)
@@ -88,7 +102,8 @@ void WindowManager::OnReparentNotify(const xcb_reparent_notify_event_t *e)
 
 void WindowManager::OnConfigureRequest(const xcb_configure_request_event_t *e)
 {
-  BOOST_LOG_TRIVIAL(info) << "Received a configure request";
+  BOOST_LOG_TRIVIAL(info) << "OnConfigureRequest";
+
   const uint32_t geometry[] = {e->x, e->y, e->width, e->height};
   const uint32_t values[] = {0};
   xcb_configure_window(conn_, e->window,
@@ -98,6 +113,12 @@ void WindowManager::OnConfigureRequest(const xcb_configure_request_event_t *e)
                        XCB_CONFIG_WINDOW_BORDER_WIDTH,
                        values);
   xcb_flush(conn_);
+
+  if (clients_.count(e->window))
+  {
+    Client *client = clients_[e->window];
+    client->OnConfigureRequest(e);
+  }
 }
 
 void WindowManager::OnConfigureNotify(const xcb_configure_notify_event_t *e)
@@ -106,7 +127,8 @@ void WindowManager::OnConfigureNotify(const xcb_configure_notify_event_t *e)
 
 void WindowManager::OnMapRequest(const xcb_map_request_event_t *e)
 {
-  BOOST_LOG_TRIVIAL(info) << "Received a map request";
+  BOOST_LOG_TRIVIAL(info) << "OnMapRequest";
+
   Client *client = new Client(conn_, screen_, e->window);
   clients_[e->window] = client;
   xcb_map_window(conn_, e->window);
@@ -115,4 +137,13 @@ void WindowManager::OnMapRequest(const xcb_map_request_event_t *e)
 
 void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
 {
+  BOOST_LOG_TRIVIAL(info) << "OnUnmapNotify";
+
+  if (clients_.count(e->window))
+  {
+    Client *client = clients_[e->window];
+    client->DestroyFrame();
+    clients_.erase(e->window);
+    delete client;
+  }
 }

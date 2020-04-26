@@ -16,6 +16,11 @@ class Client
 public:
   Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window);
 
+  void CreateFrame();
+  void DestroyFrame();
+
+  void OnConfigureRequest(const xcb_configure_request_event_t *e);
+
 private:
   void DrawFrame(uint16_t frame_width, uint16_t frame_height);
 
