@@ -19,7 +19,6 @@ WindowManager::WindowManager(xcb_connection_t *conn)
     : conn_(conn),
       screen_(xcb_aux_get_screen(conn, 0))
 {
-  root_ = new Root(conn_, screen_);
 }
 
 WindowManager::~WindowManager()
@@ -80,6 +79,8 @@ void WindowManager::Run()
   }
   xcb_ungrab_server(conn_);
   xcb_flush(conn_);
+
+  root_ = new Root(conn_, screen_);
 
   BOOST_LOG_TRIVIAL(info) << "Starting event loop";
 
@@ -209,8 +210,6 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
     }
   }
 
-  root_->Draw();
-
   // Not exactly the most performant way.
   // TODO: Rewrite in OnExpose.
   std::for_each(clients_.begin(), clients_.end(), [](std::pair<xcb_window_t, Client *> client) {
@@ -221,8 +220,6 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
 void WindowManager::OnExpose(const xcb_expose_event_t *e)
 {
   BOOST_LOG_TRIVIAL(info) << "OnExpose";
-
-  root_->Draw();
 
   // Not exactly the most performant way.
   // TODO: Rewrite in OnExpose.

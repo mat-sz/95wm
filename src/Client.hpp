@@ -60,6 +60,8 @@ private:
 
   cairo_surface_t *surface_;
 
+  cairo_t *context_;
+
   bool moving_;
   uint16_t moving_offset_x_;
   uint16_t moving_offset_y_;

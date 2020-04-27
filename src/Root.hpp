@@ -22,6 +22,4 @@ private:
   xcb_screen_t *screen_;
 
   xcb_window_t window_;
-
-  cairo_surface_t *surface_;
 };

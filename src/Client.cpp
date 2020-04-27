@@ -54,6 +54,8 @@ void Client::CreateFrame()
                               XCB_EVENT_MASK_FOCUS_CHANGE;
   xcb_change_window_attributes(conn_, window_, XCB_CW_EVENT_MASK, &event_mask);
 
+  xcb_visualtype_t *visualtype = FindVisualtype(screen_);
+  surface_ = cairo_xcb_surface_create(conn_, frame_, visualtype, frame_width, frame_height);
   DrawFrame(frame_width, frame_height);
 }
 
@@ -62,6 +64,12 @@ void Client::DestroyFrame()
   if (frame_ == 0)
   {
     return;
+  }
+
+  if (surface_)
+  {
+    cairo_surface_finish(surface_);
+    cairo_surface_destroy(surface_);
   }
 
   xcb_unmap_window(conn_, frame_);
@@ -94,14 +102,7 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
     return;
   }
 
-  if (surface_ != nullptr)
-  {
-    cairo_surface_finish(surface_);
-    cairo_surface_destroy(surface_);
-  }
-
-  xcb_visualtype_t *visualtype = FindVisualtype(screen_);
-  surface_ = cairo_xcb_surface_create(conn_, frame_, visualtype, frame_width, frame_height);
+  cairo_xcb_surface_set_size(surface_, frame_width, frame_height);
   cairo_t *context = cairo_create(surface_);
 
   cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
@@ -154,6 +155,7 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
   cairo_move_to(context, 6, 16);
   cairo_show_text(context, (char *)xcb_get_property_value(reply));
   cairo_surface_flush(surface_);
+  cairo_destroy(context);
 }
 
 void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
