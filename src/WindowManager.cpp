@@ -134,6 +134,9 @@ void WindowManager::Run()
     case XCB_FOCUS_OUT:
       OnFocusOut((xcb_focus_out_event_t *)event);
       break;
+    case XCB_PROPERTY_NOTIFY:
+      OnPropertyNotify((xcb_property_notify_event_t *)event);
+      break;
     default:
       noop;
     }
@@ -323,4 +326,9 @@ void WindowManager::OnFocusOut(const xcb_focus_out_event_t *e)
       client.second->OnFocusOut(e);
     }
   });
+}
+
+void WindowManager::OnPropertyNotify(const xcb_property_notify_event_t *e)
+{
+  BOOST_LOG_TRIVIAL(info) << "OnPropertyNotify";
 }

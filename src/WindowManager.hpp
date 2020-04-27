@@ -57,6 +57,8 @@ private:
 
   void OnFocusOut(const xcb_focus_out_event_t *e);
 
+  void OnPropertyNotify(const xcb_property_notify_event_t *e);
+
   // Handle to the XCB connection.
   xcb_connection_t *conn_;
   // Handle to the screen.
