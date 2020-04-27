@@ -13,6 +13,11 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       focused_(false)
 {
   CreateFrame();
+
+  const uint32_t values[] = {0};
+  xcb_configure_window(conn_, window_,
+                       XCB_CONFIG_WINDOW_BORDER_WIDTH,
+                       values);
 }
 
 void Client::CreateFrame()
@@ -27,6 +32,7 @@ void Client::CreateFrame()
   const uint32_t values[] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
                              XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
                              XCB_EVENT_MASK_FOCUS_CHANGE |
+                             XCB_EVENT_MASK_POINTER_MOTION |
                              XCB_EVENT_MASK_BUTTON_MOTION |
                              XCB_EVENT_MASK_BUTTON_PRESS |
                              XCB_EVENT_MASK_BUTTON_RELEASE |
@@ -363,6 +369,7 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
   if (e->detail == XCB_BUTTON_INDEX_1)
   {
     moving_ = false;
+    resizing_ = false;
   }
 }
 
@@ -372,12 +379,18 @@ void Client::OnKeyRelease(const xcb_key_release_event_t *e) {}
 
 void Client::OnFocusIn(const xcb_focus_in_event_t *e)
 {
-  focused_ = true;
-  Redraw();
+  if (!focused_)
+  {
+    focused_ = true;
+    Redraw();
+  }
 }
 
 void Client::OnFocusOut(const xcb_focus_out_event_t *e)
 {
-  focused_ = false;
-  Redraw();
+  if (focused_)
+  {
+    focused_ = false;
+    Redraw();
+  }
 }

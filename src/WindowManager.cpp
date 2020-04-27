@@ -240,6 +240,15 @@ void WindowManager::OnMotionNotify(const xcb_motion_notify_event_t *e)
     {
       client.second->OnMotionNotify(e);
     }
+
+    if (client.second->frame_ == e->event || client.second->window_ == e->event)
+    {
+      client.second->OnFocusIn(nullptr);
+    }
+    else
+    {
+      client.second->OnFocusOut(nullptr);
+    }
   });
 }
 
