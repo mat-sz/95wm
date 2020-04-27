@@ -26,8 +26,7 @@ class Client
 public:
   Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window);
 
-  void CreateFrame();
-  void DestroyFrame();
+  ~Client();
 
   void OnConfigureRequest(const xcb_configure_request_event_t *e);
 
@@ -51,6 +50,9 @@ public:
   xcb_window_t frame_;
 
 private:
+  void CreateFrame();
+  void DestroyFrame();
+
   void DrawFrame(uint16_t frame_width, uint16_t frame_height);
 
   // Handle to the XCB connection.

@@ -204,7 +204,6 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
     if (clients_.count(e->window))
     {
       Client *client = clients_[e->window];
-      client->DestroyFrame();
       clients_.erase(e->window);
       delete client;
     }

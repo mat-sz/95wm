@@ -20,6 +20,11 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
                        values);
 }
 
+Client::~Client()
+{
+  DestroyFrame();
+}
+
 void Client::CreateFrame()
 {
   frame_ = xcb_generate_id(conn_);
