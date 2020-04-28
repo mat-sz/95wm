@@ -9,8 +9,11 @@ Button::~Button()
 {
 }
 
-void Button::Draw(cairo_t *context)
+void Button::Draw(cairo_surface_t *surface)
 {
+  cairo_t *context = cairo_create(surface);
+
+  cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
   cairo_rectangle(context, x_, y_, width_, height_);
   cairo_set_source_rgb(context, 0.753, 0.753, 0.753);
   cairo_fill(context);
@@ -70,6 +73,8 @@ void Button::Draw(cairo_t *context)
   cairo_move_to(context, x_, y_ + height_);
   cairo_line_to(context, x_ + width_, y_ + height_);
   cairo_stroke(context);
+  cairo_destroy(context);
+  cairo_surface_flush(surface);
 }
 
 bool Button::CheckRect(uint16_t x, uint16_t y)

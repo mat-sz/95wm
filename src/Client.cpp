@@ -169,7 +169,7 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 
   close_button_->x_ = frame_width - 21;
   close_button_->y_ = 6;
-  close_button_->Draw(context);
+  close_button_->Draw(surface_);
 
   cairo_surface_flush(surface_);
   cairo_destroy(context);
@@ -335,10 +335,7 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
       if (close_button_->CheckRect(e->event_x, e->event_y))
       {
         close_button_->pressed_ = true;
-        cairo_t *context = cairo_create(surface_);
-        close_button_->Draw(context);
-        cairo_surface_flush(surface_);
-        cairo_destroy(context);
+        close_button_->Draw(surface_);
       }
       else
       {
@@ -405,10 +402,7 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
     if (close_button_->pressed_)
     {
       close_button_->pressed_ = false;
-      cairo_t *context = cairo_create(surface_);
-      close_button_->Draw(context);
-      cairo_surface_flush(surface_);
-      cairo_destroy(context);
+      close_button_->Draw(surface_);
     }
   }
 }
