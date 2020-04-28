@@ -7,6 +7,7 @@ extern "C"
 #include <cairo/cairo-xcb.h>
 }
 #include <memory>
+#include "Button.hpp"
 
 #define TITLEBAR_HEIGHT 21
 #define BORDER_WIDTH 3
@@ -75,4 +76,6 @@ private:
   uint16_t resizing_original_height_;
 
   bool focused_;
+
+  Button *close_button_;
 };

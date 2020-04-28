@@ -10,7 +10,8 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       surface_(nullptr),
       moving_(false),
       resizing_(RESIZE_NONE),
-      focused_(false)
+      focused_(false),
+      close_button_(new Button())
 {
   CreateFrame();
 
@@ -23,6 +24,8 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
 Client::~Client()
 {
   DestroyFrame();
+
+  delete close_button_;
 }
 
 void Client::CreateFrame()
@@ -62,6 +65,9 @@ void Client::CreateFrame()
   const uint32_t back_pixel = 0xc0c0c0;
   xcb_change_window_attributes(conn_, frame_, XCB_CW_BACK_PIXEL, &back_pixel);
   xcb_clear_area(conn_, 0, frame_, 0, 0, 0, 0);
+
+  close_button_->width_ = 16;
+  close_button_->height_ = 14;
 
   xcb_visualtype_t *visualtype = FindVisualtype(screen_);
   surface_ = cairo_xcb_surface_create(conn_, frame_, visualtype, frame_width, frame_height);
@@ -160,6 +166,11 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 
   cairo_move_to(context, 7, 16);
   cairo_show_text(context, (char *)xcb_get_property_value(reply));
+
+  close_button_->x_ = frame_width - 21;
+  close_button_->y_ = 6;
+  close_button_->Draw(context);
+
   cairo_surface_flush(surface_);
   cairo_destroy(context);
 }
