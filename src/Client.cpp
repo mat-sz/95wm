@@ -332,9 +332,20 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
 
     if (e->event_y > BORDER_WIDTH && e->event_y < (TITLEBAR_HEIGHT + BORDER_WIDTH * 2 + 1))
     {
-      moving_ = true;
-      moving_offset_x_ = e->event_x;
-      moving_offset_y_ = e->event_y;
+      if (close_button_->CheckRect(e->event_x, e->event_y))
+      {
+        close_button_->pressed_ = true;
+        cairo_t *context = cairo_create(surface_);
+        close_button_->Draw(context);
+        cairo_surface_flush(surface_);
+        cairo_destroy(context);
+      }
+      else
+      {
+        moving_ = true;
+        moving_offset_x_ = e->event_x;
+        moving_offset_y_ = e->event_y;
+      }
     }
     else
     {
@@ -390,6 +401,15 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
   {
     moving_ = false;
     resizing_ = false;
+
+    if (close_button_->pressed_)
+    {
+      close_button_->pressed_ = false;
+      cairo_t *context = cairo_create(surface_);
+      close_button_->Draw(context);
+      cairo_surface_flush(surface_);
+      cairo_destroy(context);
+    }
   }
 }
 

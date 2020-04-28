@@ -1,6 +1,7 @@
 #include "Button.hpp"
 
 Button::Button()
+    : pressed_(false)
 {
 }
 
@@ -16,7 +17,14 @@ void Button::Draw(cairo_t *context)
 
   cairo_set_line_width(context, 1.0);
 
-  cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  if (pressed_)
+  {
+    cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+  }
+  else
+  {
+    cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  }
   cairo_move_to(context, x_, y_ + 1);
   cairo_line_to(context, x_ + width_, y_ + 1);
   cairo_stroke(context);
@@ -26,15 +34,35 @@ void Button::Draw(cairo_t *context)
   cairo_stroke(context);
 
   cairo_set_source_rgb(context, 0.502, 0.502, 0.502);
-  cairo_move_to(context, x_ + 1, y_ + height_ - 1);
-  cairo_line_to(context, x_ + width_ - 1, y_ + height_ - 1);
-  cairo_stroke(context);
+  if (pressed_)
+  {
+    cairo_move_to(context, x_ + 1, y_ + 2);
+    cairo_line_to(context, x_ + width_ - 2, y_ + 2);
+    cairo_stroke(context);
 
-  cairo_move_to(context, x_ + width_ - 1, y_ + 1);
-  cairo_line_to(context, x_ + width_ - 1, y_ + height_);
-  cairo_stroke(context);
+    cairo_move_to(context, x_ + 2, y_ + 2);
+    cairo_line_to(context, x_ + 2, y_ + height_ - 2);
+    cairo_stroke(context);
+  }
+  else
+  {
+    cairo_move_to(context, x_ + 1, y_ + height_ - 1);
+    cairo_line_to(context, x_ + width_ - 1, y_ + height_ - 1);
+    cairo_stroke(context);
 
-  cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+    cairo_move_to(context, x_ + width_ - 1, y_ + 1);
+    cairo_line_to(context, x_ + width_ - 1, y_ + height_);
+    cairo_stroke(context);
+  }
+
+  if (pressed_)
+  {
+    cairo_set_source_rgb(context, 1.0, 1.0, 1.0);
+  }
+  else
+  {
+    cairo_set_source_rgb(context, 0.0, 0.0, 0.0);
+  }
   cairo_move_to(context, x_ + width_, y_);
   cairo_line_to(context, x_ + width_, y_ + height_);
   cairo_stroke(context);
