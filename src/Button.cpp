@@ -73,8 +73,8 @@ void Button::Draw(cairo_surface_t *surface)
   cairo_move_to(context, x_, y_ + height_);
   cairo_line_to(context, x_ + width_, y_ + height_);
   cairo_stroke(context);
-  cairo_destroy(context);
   cairo_surface_flush(surface);
+  cairo_destroy(context);
 }
 
 bool Button::CheckRect(uint16_t x, uint16_t y)

@@ -403,6 +403,23 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
     {
       close_button_->pressed_ = false;
       close_button_->Draw(surface_);
+
+      if (close_button_->CheckRect(e->event_x, e->event_y))
+      {
+        xcb_intern_atom_cookie_t cookie = xcb_intern_atom_unchecked(conn_, false, 16, "WM_DELETE_WINDOW");
+        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(conn_, cookie, nullptr);
+
+        xcb_client_message_event_t event;
+        event.response_type = XCB_CLIENT_MESSAGE;
+        event.window = window_;
+        event.format = 32;
+        event.sequence = 0;
+        event.type = 0;
+        event.data.data32[1] = e->time;
+        event.data.data32[0] = reply->atom;
+
+        xcb_send_event(conn_, false, window_, XCB_EVENT_MASK_NO_EVENT, (char *)&event);
+      }
     }
   }
 }
