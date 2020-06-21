@@ -79,5 +79,5 @@ private:
 
   bool focused_;
 
-  std::shared_ptr<Button> close_button_;
+  std::unique_ptr<Button> close_button_;
 };

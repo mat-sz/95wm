@@ -11,7 +11,7 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       moving_(false),
       resizing_(RESIZE_NONE),
       focused_(false),
-      close_button_(new Button())
+      close_button_(std::unique_ptr<Button>(new Button()))
 {
   CreateFrame();
 
@@ -349,7 +349,7 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
       if (close_button_->CheckRect(e->event_x, e->event_y))
       {
         close_button_->pressed_ = true;
-        close_button_->Draw(surface_);
+        Redraw();
       }
       else
       {
@@ -416,7 +416,7 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
     if (close_button_->pressed_)
     {
       close_button_->pressed_ = false;
-      close_button_->Draw(surface_);
+      Redraw();
 
       if (close_button_->CheckRect(e->event_x, e->event_y))
       {
