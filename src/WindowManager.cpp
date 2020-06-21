@@ -1,4 +1,6 @@
 #include "WindowManager.hpp"
+#include <memory>
+#include <utility>
 #include <boost/log/trivial.hpp>
 
 using ::std::unique_ptr;
@@ -80,7 +82,7 @@ void WindowManager::Run()
   xcb_ungrab_server(conn_);
   xcb_flush(conn_);
 
-  root_ = new Root(conn_, screen_);
+  root_ = std::unique_ptr<Root>(new Root(conn_, screen_));
 
   BOOST_LOG_TRIVIAL(info) << "Starting event loop";
 

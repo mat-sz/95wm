@@ -64,6 +64,6 @@ private:
   // Handle to the screen.
   xcb_screen_t *screen_;
 
-  ::std::unordered_map<xcb_window_t, Client *> clients_;
-  Root *root_;
+  std::unordered_map<xcb_window_t, Client *> clients_;
+  std::unique_ptr<Root> root_;
 };

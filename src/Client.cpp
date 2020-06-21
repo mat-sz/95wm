@@ -24,8 +24,6 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
 Client::~Client()
 {
   DestroyFrame();
-
-  delete close_button_;
 }
 
 void Client::CreateFrame()
