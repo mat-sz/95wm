@@ -47,6 +47,8 @@ public:
 
   void Redraw();
 
+  xcb_connection_t *conn_;
+  xcb_screen_t *screen_;
   xcb_window_t window_;
   xcb_window_t frame_;
 
@@ -55,11 +57,6 @@ private:
   void DestroyFrame();
 
   void DrawFrame(uint16_t frame_width, uint16_t frame_height);
-
-  // Handle to the XCB connection.
-  xcb_connection_t *conn_;
-  // Handle to the screen.
-  xcb_screen_t *screen_;
 
   xcb_visualtype_t *visualtype_;
 

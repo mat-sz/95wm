@@ -330,6 +330,9 @@ void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
                            geometry_frame);
     }
     break;
+    default:
+      // Shouldn't happen.
+      BOOST_LOG_TRIVIAL(info) << "Invalid value of resizing_";
     }
 
     xcb_flush(conn_);
