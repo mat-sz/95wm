@@ -67,9 +67,8 @@ void Client::CreateFrame()
   close_button_->width_ = 16;
   close_button_->height_ = 14;
 
-  xcb_visualtype_t *visualtype = FindVisualtype(screen_);
-  surface_ = cairo_xcb_surface_create(conn_, frame_, visualtype, frame_width, frame_height);
-  DrawFrame(frame_width, frame_height);
+  visualtype_ = FindVisualtype(screen_);
+  Redraw();
 }
 
 void Client::DestroyFrame()
@@ -105,7 +104,20 @@ void Client::Redraw()
   const uint16_t frame_width = geometry->width + BORDER_WIDTH * 2 + 1;
   const uint16_t frame_height = geometry->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT + 1;
 
+  xcb_pixmap_t pixmap = xcb_generate_id(conn_);
+  xcb_create_pixmap(conn_, screen_->root_depth, pixmap, frame_, frame_width, frame_height);
+  xcb_aux_sync(conn_);
+
+  surface_ = cairo_xcb_surface_create(conn_, pixmap, visualtype_, frame_width, frame_height);
+
   DrawFrame(frame_width, frame_height);
+
+  xcb_change_window_attributes(conn_, frame_, XCB_CW_BACK_PIXMAP, &pixmap);
+  xcb_clear_area(conn_, 0, frame_, 0, 0, frame_width, frame_height);
+
+  cairo_surface_finish(surface_);
+  cairo_surface_destroy(surface_);
+  surface_ = nullptr;
 }
 
 void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
@@ -119,6 +131,10 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
   cairo_t *context = cairo_create(surface_);
 
   cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
+
+  cairo_set_source_rgb(context, 0.753, 0.753, 0.753);
+  cairo_rectangle(context, 0, 0, frame_width, frame_height);
+  cairo_fill(context);
 
   cairo_rectangle(context, 2, 2, frame_width - 2, frame_height - 2);
   cairo_set_source_rgb(context, 1.0, 1.0, 1.0);

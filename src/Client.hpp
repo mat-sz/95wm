@@ -61,6 +61,8 @@ private:
   // Handle to the screen.
   xcb_screen_t *screen_;
 
+  xcb_visualtype_t *visualtype_;
+
   cairo_surface_t *surface_;
 
   cairo_t *context_;
