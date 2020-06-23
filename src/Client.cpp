@@ -363,8 +363,10 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
     {
       if (close_button_->CheckRect(e->event_x, e->event_y))
       {
-        BOOST_LOG_TRIVIAL(info) << "pressed_ = true";
         close_button_->pressed_ = true;
+
+        // FIXME: Temporary
+        Redraw();
         Redraw();
       }
       else
@@ -431,7 +433,6 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
 
     if (close_button_->pressed_)
     {
-      BOOST_LOG_TRIVIAL(info) << "pressed_ = false";
       close_button_->pressed_ = false;
       Redraw();
 
