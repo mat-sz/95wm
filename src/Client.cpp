@@ -336,7 +336,14 @@ void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
     }
 
     xcb_flush(conn_);
-    Redraw();
+
+    if (resizing_previous_mouse_x_ != e->event_x || resizing_previous_mouse_y_ != e->event_y)
+    {
+      Redraw();
+    }
+
+    resizing_previous_mouse_x_ = e->event_x;
+    resizing_previous_mouse_y_ = e->event_y;
   }
 }
 
@@ -346,6 +353,8 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
   {
     moving_ = false;
     resizing_ = RESIZE_NONE;
+    resizing_previous_mouse_x_ = 0;
+    resizing_previous_mouse_y_ = 0;
 
     if (e->event_y > BORDER_WIDTH && e->event_y < (TITLEBAR_HEIGHT + BORDER_WIDTH * 2 + 1))
     {

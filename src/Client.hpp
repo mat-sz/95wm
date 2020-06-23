@@ -73,6 +73,8 @@ private:
   uint16_t resizing_original_y_;
   uint16_t resizing_original_width_;
   uint16_t resizing_original_height_;
+  uint16_t resizing_previous_mouse_x_;
+  uint16_t resizing_previous_mouse_y_;
 
   bool focused_;
 
