@@ -15,7 +15,7 @@ public:
 
   ~Button();
 
-  void Draw(cairo_surface_t *surface);
+  void Draw(cairo_t *context);
 
   bool CheckRect(uint16_t x, uint16_t y);
 

@@ -223,13 +223,10 @@ void WindowManager::OnUnmapNotify(const xcb_unmap_notify_event_t *e)
 
 void WindowManager::OnExpose(const xcb_expose_event_t *e)
 {
-  BOOST_LOG_TRIVIAL(info) << "OnExpose";
 }
 
 void WindowManager::OnMotionNotify(const xcb_motion_notify_event_t *e)
 {
-  BOOST_LOG_TRIVIAL(info) << "OnMotionNotify";
-
   std::for_each(clients_.begin(), clients_.end(), [e](std::pair<xcb_window_t, Client *> client) {
     if (client.second->frame_ == e->event)
     {
