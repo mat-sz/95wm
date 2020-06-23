@@ -187,6 +187,16 @@ void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
   const uint16_t frame_width = e->width + BORDER_WIDTH * 2 + 1;
   const uint16_t frame_height = e->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT + 1;
 
+  const uint32_t geometry_window[] = {e->width, e->height};
+  xcb_configure_window(conn_, window_,
+                       XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                       geometry_window);
+
+  const uint32_t geometry_frame[] = {frame_width, frame_height};
+  xcb_configure_window(conn_, frame_,
+                       XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                       geometry_frame);
+
   Redraw();
 }
 
