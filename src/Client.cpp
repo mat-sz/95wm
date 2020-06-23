@@ -7,7 +7,6 @@ Client::Client(xcb_connection_t *conn, xcb_screen_t *screen, xcb_window_t window
       screen_(screen),
       window_(window),
       frame_(0),
-      surface_(nullptr),
       moving_(false),
       resizing_(RESIZE_NONE),
       focused_(false),
@@ -78,12 +77,6 @@ void Client::DestroyFrame()
     return;
   }
 
-  if (surface_)
-  {
-    cairo_surface_finish(surface_);
-    cairo_surface_destroy(surface_);
-  }
-
   xcb_unmap_window(conn_, frame_);
   xcb_reparent_window(conn_, window_, screen_->root, 0, 0);
   xcb_change_save_set(conn_, XCB_SET_MODE_DELETE, window_);
@@ -108,27 +101,27 @@ void Client::Redraw()
   xcb_create_pixmap(conn_, screen_->root_depth, pixmap, frame_, frame_width, frame_height);
   xcb_aux_sync(conn_);
 
-  surface_ = cairo_xcb_surface_create(conn_, pixmap, visualtype_, frame_width, frame_height);
+  cairo_surface_t *surface = cairo_xcb_surface_create(conn_, pixmap, visualtype_, frame_width, frame_height);
 
-  DrawFrame(frame_width, frame_height);
+  DrawFrame(surface, frame_width, frame_height);
+
+  cairo_surface_finish(surface);
+  cairo_surface_destroy(surface);
+  surface = nullptr;
 
   xcb_change_window_attributes(conn_, frame_, XCB_CW_BACK_PIXMAP, &pixmap);
   xcb_clear_area(conn_, 0, frame_, 0, 0, frame_width, frame_height);
-
-  cairo_surface_finish(surface_);
-  cairo_surface_destroy(surface_);
-  surface_ = nullptr;
 }
 
-void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
+void Client::DrawFrame(cairo_surface_t *surface, uint16_t frame_width, uint16_t frame_height)
 {
   if (frame_ == 0)
   {
     return;
   }
 
-  cairo_xcb_surface_set_size(surface_, frame_width, frame_height);
-  cairo_t *context = cairo_create(surface_);
+  cairo_xcb_surface_set_size(surface, frame_width, frame_height);
+  cairo_t *context = cairo_create(surface);
 
   cairo_set_antialias(context, CAIRO_ANTIALIAS_NONE);
 
@@ -183,9 +176,9 @@ void Client::DrawFrame(uint16_t frame_width, uint16_t frame_height)
 
   close_button_->x_ = frame_width - 21;
   close_button_->y_ = 6;
-  close_button_->Draw(surface_);
+  close_button_->Draw(context);
 
-  cairo_surface_flush(surface_);
+  cairo_surface_flush(surface);
   cairo_destroy(context);
 }
 
@@ -194,7 +187,7 @@ void Client::OnConfigureRequest(const xcb_configure_request_event_t *e)
   const uint16_t frame_width = e->width + BORDER_WIDTH * 2 + 1;
   const uint16_t frame_height = e->height + BORDER_WIDTH * 2 + TITLEBAR_HEIGHT + 1;
 
-  DrawFrame(frame_width, frame_height);
+  Redraw();
 }
 
 void Client::OnMotionNotify(const xcb_motion_notify_event_t *e)
@@ -360,6 +353,7 @@ void Client::OnButtonPress(const xcb_button_press_event_t *e)
     {
       if (close_button_->CheckRect(e->event_x, e->event_y))
       {
+        BOOST_LOG_TRIVIAL(info) << "pressed_ = true";
         close_button_->pressed_ = true;
         Redraw();
       }
@@ -427,6 +421,7 @@ void Client::OnButtonRelease(const xcb_button_release_event_t *e)
 
     if (close_button_->pressed_)
     {
+      BOOST_LOG_TRIVIAL(info) << "pressed_ = false";
       close_button_->pressed_ = false;
       Redraw();
 

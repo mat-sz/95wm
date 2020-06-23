@@ -56,13 +56,9 @@ private:
   void CreateFrame();
   void DestroyFrame();
 
-  void DrawFrame(uint16_t frame_width, uint16_t frame_height);
+  void DrawFrame(cairo_surface_t *surface, uint16_t frame_width, uint16_t frame_height);
 
   xcb_visualtype_t *visualtype_;
-
-  cairo_surface_t *surface_;
-
-  cairo_t *context_;
 
   bool moving_;
   uint16_t moving_offset_x_;
