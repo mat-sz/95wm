@@ -9,6 +9,7 @@ extern "C"
 #include <unordered_map>
 #include "Client.hpp"
 #include "Root.hpp"
+#include "Taskbar.hpp"
 
 #define noop
 
@@ -66,4 +67,5 @@ private:
 
   std::unordered_map<xcb_window_t, Client *> clients_;
   std::unique_ptr<Root> root_;
+  std::unique_ptr<Taskbar> taskbar_;
 };

@@ -83,6 +83,7 @@ void WindowManager::Run()
   xcb_flush(conn_);
 
   root_ = std::unique_ptr<Root>(new Root(conn_, screen_));
+  taskbar_ = std::unique_ptr<Taskbar>(new Taskbar(conn_, screen_));
 
   BOOST_LOG_TRIVIAL(info) << "Starting event loop";
 
